@@ -2,8 +2,6 @@ package org.androidstudio.notely.ui.viewmodel
 
 import androidx.lifecycle.*
 import kotlinx.coroutines.launch
-import org.androidstudio.notely.data.model.Lesson
-import org.androidstudio.notely.data.repository.LessonRepository
 
 class LessonViewModel(private val repository: LessonRepository) : ViewModel() {
 
