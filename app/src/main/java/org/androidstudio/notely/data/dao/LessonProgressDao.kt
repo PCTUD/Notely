@@ -1,3 +1,4 @@
+//interacts with the database to manipulate lesson progress data
 package org.androidstudio.notely.data.dao
 
 import androidx.room.*

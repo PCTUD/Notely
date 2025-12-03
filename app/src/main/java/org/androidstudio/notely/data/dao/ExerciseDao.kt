@@ -1,3 +1,5 @@
+// interacts with the database to manipulate exercise data
+
 package org.androidstudio.notely.data.dao
 
 import androidx.room.*
