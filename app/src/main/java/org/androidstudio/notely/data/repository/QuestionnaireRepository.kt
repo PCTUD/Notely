@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import org.androidstudio.notely.data.dao.QuestionnaireDao
 import org.androidstudio.notely.data.entity.QuestionnaireResponseEntity
 
-class QuestionnaireRepository(
-    private val questionnaireDao: QuestionnaireDao
-) {
+class QuestionnaireRepository
+    (private val questionnaireDao: QuestionnaireDao)
+{
 
     suspend fun saveResponse(response: QuestionnaireResponseEntity) {
         questionnaireDao.insertResponse(response)
