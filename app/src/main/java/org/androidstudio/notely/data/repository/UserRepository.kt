@@ -5,12 +5,13 @@ import org.androidstudio.notely.data.entity.UserEntity
 
 class UserRepository(private val userDao: UserDao) {
 
-    suspend fun insertUser(user: UserEntity) =
-        userDao.insertUser(user)
+    suspend fun save(user: UserEntity) {
+        userDao.insert(user)
+    }
 
-    suspend fun getUserById(id: Int): UserEntity? =
-        userDao.getUserById(id)
+    fun getUser() = userDao.getUser()
 
-    suspend fun deleteUser(user: UserEntity) =
-        userDao.deleteUser(user)
+    suspend fun delete(user: UserEntity) {
+        userDao.delete(user)
+    }
 }

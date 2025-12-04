@@ -1,3 +1,6 @@
+// Refactored temporarily(?) from -.kt to -.txt
+
+
 package org.androidstudio.notely.ui.viewmodel
 
 import androidx.lifecycle.*
