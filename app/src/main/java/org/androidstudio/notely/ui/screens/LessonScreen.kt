@@ -1,67 +1,146 @@
 package org.androidstudio.notely.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import kotlin.math.roundToInt
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.layout.ContentScale
+
 
 @Composable
 fun LessonScreen(
     onExit: () -> Unit
 ) {
-    Column(
+    // ---- Local state for the chosen photo ----
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    // ---- ActivityResultLauncher for picking an image from gallery ----
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        // called when the user picks an image (or cancels)
+        if (uri != null) {
+            photoUri = uri
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
-        // --- Header Row ---
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+        // ===== Main lesson content =====
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text(
-                text = "←",
-                fontSize = 32.sp,
-                modifier = Modifier
-                    .clickable { onExit() }
-                    .padding(end = 12.dp)
-            )
+            // --- Header Row ---
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "←",
+                    fontSize = 32.sp,
+                    modifier = Modifier
+                        .clickable { onExit() }
+                        .padding(end = 12.dp)
+                )
+
+                Text(
+                    text = "Melodies 1",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Melodies 1",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                text = "Musical Direction",
+                fontSize = 16.sp,
+                color = Color.DarkGray
             )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
+            // --- Piano Keys (your existing composable) ---
+            PianoKeyboard()
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- Button to add / replace lesson photo ---
+            Button(
+                onClick = { photoPickerLauncher.launch("image/*") }
+            ) {
+                Text(text = if (photoUri == null) "Add lesson photo" else "Change lesson photo")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- Progress Bar (your existing composable) ---
+            LessonProgressBar(progress = 0.6f)
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "Musical Direction",
-            fontSize = 16.sp,
-            color = Color.DarkGray
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
-
-        // --- Piano Keys ---
-        PianoKeyboard()
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // --- Progress Bar ---
-        LessonProgressBar(progress = 0.6f)
+        // ===== Floating, draggable photo overlay =====
+        FloatingLessonPhoto(photoUri = photoUri)
     }
 }
+
+/*
+@Composable
+//private fun FloatingLessonPhoto(
+    photoUri: Uri?
+) {
+    if (photoUri == null) return
+
+    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+
+    Box(
+        modifier = Modifier
+            .size(140.dp)
+            // Start somewhere in the bottom-right-ish area
+            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+            .align(Alignment.BottomEnd) // starting anchor
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.2f))
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    offset += dragAmount
+                }
+            }
+            .padding(2.dp)
+    ) {
+        AsyncImage(
+            model = photoUri,
+            contentDescription = "Lesson photo",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+*/
 
 @Composable
 fun PianoKeyboard() {
@@ -144,3 +223,35 @@ fun LessonProgressBar(progress: Float) {
         }
     }
 }
+
+@Composable
+private fun FloatingLessonPhoto(
+    photoUri: Uri?
+) {
+    if (photoUri == null) return
+
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
+            .size(140.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.2f))
+            .pointerInput(Unit) {
+                detectDragGestures { _, dragAmount ->
+                    offsetX += dragAmount.x
+                    offsetY += dragAmount.y
+                }
+            }
+    ) {
+        AsyncImage(
+            model = photoUri,
+            contentDescription = "Lesson Photo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+

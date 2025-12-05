@@ -3,10 +3,9 @@ package org.androidstudio.notely.data.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "lesson_progress")
-data class LessonProgressEntity(
+@Entity(tableName = "lesson_photos")
+data class LessonPhotoEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,        // NEW
     val lessonId: Int,
-    val completedExercisesCount: Int = 0 // 0–3
+    val uri: String          // Persist URI to photo (gallery or camera)
 )

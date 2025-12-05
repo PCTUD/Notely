@@ -3,6 +3,7 @@ package org.androidstudio.notely.data.database
 
 import android.content.Context
 import androidx.room.Room
+import org.androidstudio.notely.data.NotelyDatabase
 
 object DatabaseProvider {
     @Volatile

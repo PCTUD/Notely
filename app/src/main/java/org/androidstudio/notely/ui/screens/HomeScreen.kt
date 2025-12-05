@@ -20,8 +20,11 @@ import androidx.compose.foundation.border
 
 
 @Composable
+
 fun HomeScreen(
-    onSelectLesson: () -> Unit
+    onStartLesson: () -> Unit,
+    onQuestionnaire: () -> Unit,
+    onAccounts: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -33,10 +36,34 @@ fun HomeScreen(
         Text(
             text = "Notely",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
+            color = Color(0xFFFF6A4D) // theme accent
         )
 
         // --- Row 1 ---
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Notely",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "Accounts",
+                modifier = Modifier.clickable { onAccounts() },
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        // --- Row 2 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -45,7 +72,7 @@ fun HomeScreen(
                 title = "Open this melody exercise in order to continue your melody learning journey",
                 progress = 0.4f,
                 icon = "♪",
-                onClick = { onSelectLesson() }
+                onClick = { onStartLesson() }
             )
 
             ExerciseCard(
@@ -58,7 +85,7 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- Row 2 ---
+        // --- Row 3 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly

@@ -2,6 +2,10 @@ package org.androidstudio.notely.data.repository
 
 import android.content.Context
 import org.androidstudio.notely.data.database.DatabaseProvider
+import org.androidstudio.notely.data.repository.*
+import org.androidstudio.notely.data.dao.*
+
+
 
 object RepositoryProvider {
 
@@ -12,7 +16,7 @@ object RepositoryProvider {
         ExerciseRepository(DatabaseProvider.get(context).exerciseDao())
 
     fun progressRepository(context: Context): LessonProgressRepository =
-        LessonProgressRepository(DatabaseProvider.get(context).progressDao())
+        LessonProgressRepository(DatabaseProvider.get(context).lessonProgressDao())
 
     fun questionnaireRepository(context: Context): QuestionnaireRepository =
         QuestionnaireRepository(DatabaseProvider.get(context).questionnaireDao())

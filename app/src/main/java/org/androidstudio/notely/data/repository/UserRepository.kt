@@ -1,17 +1,15 @@
 package org.androidstudio.notely.data.repository
 
+
+import kotlinx.coroutines.flow.Flow
 import org.androidstudio.notely.data.dao.UserDao
 import org.androidstudio.notely.data.entity.UserEntity
 
-class UserRepository(private val userDao: UserDao) {
+class UserRepository(private val dao: UserDao) {
 
-    suspend fun save(user: UserEntity) {
-        userDao.insert(user)
-    }
+    fun getUsers(): Flow<List<UserEntity>> = dao.getUsers()
 
-    fun getUser() = userDao.getUser()
+    suspend fun createUser(user: UserEntity) = dao.insertUser(user)
 
-    suspend fun delete(user: UserEntity) {
-        userDao.delete(user)
-    }
+    suspend fun deleteUser(user: UserEntity) = dao.deleteUser(user)
 }

@@ -1,18 +1,24 @@
+// data/dao/UserDao.kt
 package org.androidstudio.notely.data.dao
 
-import androidx.room.*
-import org.androidstudio.notely.data.entity.UserEntity
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
+import org.androidstudio.notely.data.entity.UserEntity
 
 @Dao
 interface UserDao {
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(user: UserEntity)
+    @Query("SELECT * FROM users ORDER BY name COLLATE NOCASE")
+    fun getUsers(): Flow<List<UserEntity>>
 
-    @Query("SELECT * FROM users ORDER BY id LIMIT 1")
-    fun getUser(): Flow<UserEntity?>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUser(user: UserEntity)
 
     @Delete
-    suspend fun delete(user: UserEntity)
+    suspend fun deleteUser(user: UserEntity)
 }
+

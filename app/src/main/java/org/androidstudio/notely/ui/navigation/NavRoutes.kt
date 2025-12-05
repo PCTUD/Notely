@@ -1,7 +1,9 @@
 package org.androidstudio.notely.ui.navigation
 
-object NavRoutes {
-    const val HOME = "home"
-    const val QUESTIONNAIRE = "questionnaire"
-    const val LESSON = "lesson"
-}
+
+sealed class NavRoutes(val route: String) {
+    object Accounts : NavRoutes("accounts")
+    object Home : NavRoutes("home")
+    object Lesson : NavRoutes("lesson")
+    object Questionnaire : NavRoutes("questionnaire")
+    }
