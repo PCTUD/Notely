@@ -79,6 +79,7 @@ fun AccountScreen(
                     )
                 }
             }
+
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -154,6 +155,13 @@ private fun AccountRow(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
+
+                if (user.experienceLabel.isNotBlank()) {
+                    Text(
+                        text = user.experienceLabel,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
             if (isActive) {

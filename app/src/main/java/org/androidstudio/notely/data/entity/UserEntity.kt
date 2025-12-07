@@ -7,5 +7,7 @@ import androidx.room.PrimaryKey
 data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val emoji: String
+    val emoji: String,
+    val experienceLabel: String,   // shown under the name
+    val experiencePoints: Int      // numeric score from questionnaire
 )

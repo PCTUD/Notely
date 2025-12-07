@@ -14,6 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.launch
+import org.androidstudio.notely.ui.viewmodel.UserViewModel
+
 
 
 // -------------------------------------------------------------
@@ -33,116 +36,75 @@ data class QuestionnaireResult(
 // -------------------------------------------------------------
 @Composable
 fun QuestionnaireScreen(
-    onSubmit: (QuestionnaireResult) -> Unit
+    userViewModel: UserViewModel,
+    onDone: () -> Unit
 ) {
-    // Local state for answers
-    var playedBefore by remember { mutableStateOf<Boolean?>(null) }
-    var grade4 by remember { mutableStateOf<Boolean?>(null) }
-    var grade6 by remember { mutableStateOf<Boolean?>(null) }
-    var grade8 by remember { mutableStateOf<Boolean?>(null) }
-    var circleOfFifths by remember { mutableStateOf<Boolean?>(null) }
-    var practiceFreq by remember { mutableStateOf<Int?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Make sure we know who the active user is
+    LaunchedEffect(Unit) {
+        userViewModel.loadActiveUser()
+    }
+
+    val currentUserId by userViewModel.currentUserId.collectAsState()
+
+    // 1..5 slider for experience
+    var sliderValue by remember { mutableStateOf(2f) }
+
+    val label = remember(sliderValue) {
+        when (sliderValue.toInt()) {
+            1 -> "Complete beginner"
+            2 -> "Some experience"
+            3 -> "Comfortable"
+            4 -> "Confident"
+            else -> "Advanced"
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F2F2))
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFF6A4D))
-                .padding(vertical = 20.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Notely",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+        Text(
+            text = "Quick questionnaire",
+            style = MaterialTheme.typography.headlineMedium
+        )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        Text(
+            text = "How confident are you with music theory?",
+            style = MaterialTheme.typography.bodyLarge
+        )
 
-            item {
-                QuestionYesNo(
-                    text = "Have you ever played piano before?",
-                    answer = playedBefore,
-                    onAnswer = { playedBefore = it }
-                )
-            }
+        Slider(
+            value = sliderValue,
+            onValueChange = { sliderValue = it },
+            valueRange = 1f..5f,
+            steps = 3, // 5 positions total
+            modifier = Modifier.fillMaxWidth()
+        )
 
-            item {
-                QuestionYesNo(
-                    text = "Did you complete grade 4?",
-                    answer = grade4,
-                    onAnswer = { grade4 = it }
-                )
-            }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.titleMedium
+        )
 
-            item {
-                QuestionYesNo(
-                    text = "Did you complete grade 6?",
-                    answer = grade6,
-                    onAnswer = { grade6 = it }
-                )
-            }
+        Spacer(modifier = Modifier.height(24.dp))
 
-            item {
-                QuestionYesNo(
-                    text = "Did you complete grade 8?",
-                    answer = grade8,
-                    onAnswer = { grade8 = it }
-                )
-            }
-
-            item {
-                QuestionYesNo(
-                    text = "Do you understand the circle of fifths?",
-                    answer = circleOfFifths,
-                    onAnswer = { circleOfFifths = it }
-                )
-            }
-
-            item {
-                PracticeFrequencySelector(
-                    selected = practiceFreq,
-                    onSelect = { practiceFreq = it }
-                )
-            }
-
-            // Submit button
-            item {
-                Button(
-                    onClick = {
-                        onSubmit(
-                            QuestionnaireResult(
-                                playedBefore,
-                                grade4,
-                                grade6,
-                                grade8,
-                                circleOfFifths,
-                                practiceFreq
-                            )
-                        )
-                    },
-                    enabled = playedBefore != null &&
-                            grade4 != null &&
-                            grade6 != null &&
-                            grade8 != null &&
-                            circleOfFifths != null &&
-                            practiceFreq != null,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Submit")
+        Button(
+            onClick = {
+                scope.launch {
+                    val id = currentUserId
+                    if (id != null) {
+                        userViewModel.setExperienceLabel(id, label)
+                    }
+                    onDone()
                 }
             }
+        ) {
+            Text("Save and go back")
         }
     }
 }
@@ -220,11 +182,4 @@ fun PracticeFrequencySelector(
     }
 }
 
-//--------------------------------------------------------------
-// PREVIEW
-//--------------------------------------------------------------
-@Composable
-@Preview(showBackground = true)
-fun QuestionnairePreview() {
-    QuestionnaireScreen(onSubmit = {})
-}
+

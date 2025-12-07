@@ -6,15 +6,20 @@ import androidx.room.Room
 import org.androidstudio.notely.data.NotelyDatabase
 
 object DatabaseProvider {
+
     @Volatile
     private var INSTANCE: NotelyDatabase? = null
 
-    fun get(context: Context): NotelyDatabase =
-        INSTANCE ?: synchronized(this) {
+    fun get(context: Context): NotelyDatabase {
+        return INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 context.applicationContext,
                 NotelyDatabase::class.java,
                 "notely.db"
-            ).build().also { INSTANCE = it }
+            )
+                .fallbackToDestructiveMigration()   // ← important for dev
+                .build()
+                .also { INSTANCE = it }
         }
+    }
 }

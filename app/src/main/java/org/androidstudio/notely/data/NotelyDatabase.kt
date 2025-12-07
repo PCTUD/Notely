@@ -21,7 +21,7 @@ import org.androidstudio.notely.data.entity.UserEntity
         UserEntity::class,
         LessonPhotoEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class NotelyDatabase : RoomDatabase() {
