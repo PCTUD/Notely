@@ -35,20 +35,7 @@ class UserViewModel(
 
     fun addUser(name: String, emoji: String) {
         viewModelScope.launch {
-            val user = UserEntity(
-                name = name,
-                emoji = emoji,
-                experienceLabel = "Not set",
-                experiencePoints = 0
-            )
-            userRepository.createUser(user)
+            userRepository.createUser(UserEntity(name = name, emoji = emoji))
         }
     }
-
-    fun setExperienceLabel(userId: Int, label: String) {
-        viewModelScope.launch {
-            userRepository.updateExperienceLabel(userId, label)
-        }
-    }
-
 }

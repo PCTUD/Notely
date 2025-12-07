@@ -17,13 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.ui.tooling.preview.Preview
 
 
 @Composable
 
 fun HomeScreen(
-    onSelectLesson: (Int) -> Unit,
+    onStartLesson: () -> Unit,
     onQuestionnaire: () -> Unit,
     onAccounts: () -> Unit
 ) {
@@ -38,10 +37,11 @@ fun HomeScreen(
             text = "Notely",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 32.dp),
-            color = Color(0xFFFF6A4D)
+            color = Color(0xFFFF6A4D) // theme accent
         )
 
-        // First row
+        // --- Row 1 ---
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,61 +58,52 @@ fun HomeScreen(
             Text(
                 text = "Accounts",
                 modifier = Modifier.clickable { onAccounts() },
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
         }
 
-        // Row 2: lessons 1 & 2
+        // --- Row 2 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ExerciseCard(
-                title = "Lesson 1: Melodies",
-                progress = 0f,        // TODO: hook real progress later
+                title = "Open this melody exercise in order to continue your melody learning journey",
+                progress = 0.4f,
                 icon = "♪",
-                onClick = { onSelectLesson(1) }
+                onClick = { onStartLesson() }
             )
 
             ExerciseCard(
-                title = "Lesson 2: Rhythms",
+                title = "Begin your Harmony exercise",
                 progress = 0f,
                 icon = "𝄞",
-                onClick = { onSelectLesson(2) }
+                onClick = { /* TODO */ }
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Row 3: lessons 3 & 4
+        // --- Row 3 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             ExerciseCard(
-                title = "Lesson 3: Chords",
+                title = "Begin your chord exercise",
                 progress = 0f,
                 icon = "🎵",
-                onClick = { onSelectLesson(3) }
+                onClick = { /* TODO */ }
             )
 
             ExerciseCard(
-                title = "Lesson 4: Scales",
+                title = "Begin your scale exercise",
                 progress = 0f,
                 icon = "♩",
-                onClick = { onSelectLesson(4) }
+                onClick = { /* TODO */ }
             )
         }
-
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Questionnaire",
-            modifier = Modifier.clickable { onQuestionnaire() }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
     }
 }
 

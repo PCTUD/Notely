@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,97 +24,37 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlin.math.roundToInt
 import androidx.compose.foundation.clickable
-
-// Simple enum so we can mix & match the three exercise UIs
-private enum class ExerciseType { MELODY, RHYTHM, INTERVALS }
-
-// Static definitions: 4 lessons, each reusing the 3 exercises in a different order
-private val lessonDefinitions: Map<Int, List<ExerciseType>> = mapOf(
-    1 to listOf(ExerciseType.MELODY, ExerciseType.RHYTHM, ExerciseType.INTERVALS),
-    2 to listOf(ExerciseType.RHYTHM, ExerciseType.INTERVALS, ExerciseType.MELODY),
-    3 to listOf(ExerciseType.INTERVALS, ExerciseType.MELODY, ExerciseType.RHYTHM),
-    4 to listOf(ExerciseType.RHYTHM, ExerciseType.MELODY, ExerciseType.INTERVALS)
-)
-
-@Composable
-private fun MelodyExerciseContent() {
-    Text(
-        text = "Play the melody on the keyboard below.",
-        style = MaterialTheme.typography.bodyLarge
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-    PianoKeyboard()
-}
-
-@Composable
-private fun RhythmExerciseContent() {
-    Text(
-        text = "Tap the rhythm by clapping or tapping the beat.",
-        style = MaterialTheme.typography.bodyLarge
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Simple placeholder UI
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text("1  2  3  4  | 1  2  3  4")
-        Text("♩ ♪ ♪ ♩   | ♩ ♩ ♪ ♪")
-    }
-}
-
-@Composable
-private fun IntervalsExerciseContent() {
-    Text(
-        text = "Listen for the interval and identify it.",
-        style = MaterialTheme.typography.bodyLarge
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text("Example questions:")
-        Text("• Is this a major or minor third?")
-        Text("• Is this interval going up or down?")
-    }
-}
+import androidx.compose.foundation.border
+import androidx.compose.ui.layout.ContentScale
 
 
 @Composable
 fun LessonScreen(
-    lessonId: Int,
     onExit: () -> Unit
 ) {
-    val exercises = lessonDefinitions[lessonId] ?: lessonDefinitions[1]!!
-    var currentIndex by remember { mutableStateOf(0) }
-
-    // ---- photo picker state (shared for all 3 parts) ----
+    // ---- Local state for the chosen photo ----
     var photoUri by remember { mutableStateOf<Uri?>(null) }
+
+    // ---- ActivityResultLauncher for picking an image from gallery ----
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        if (uri != null) photoUri = uri
+        // called when the user picks an image (or cancels)
+        if (uri != null) {
+            photoUri = uri
+        }
     }
-
-    val part = exercises[currentIndex]
-    val progressFraction = (currentIndex + 0) / 3f
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // ===== Main lesson content =====
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Header row
+            // --- Header Row ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -129,8 +68,8 @@ fun LessonScreen(
                 )
 
                 Text(
-                    text = "Lesson $lessonId • Part ${currentIndex + 1} / 3",
-                    style = MaterialTheme.typography.headlineSmall.copy(
+                    text = "Melodies 1",
+                    style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -139,60 +78,129 @@ fun LessonScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = when (part) {
-                    ExerciseType.MELODY -> "Melody exercise"
-                    ExerciseType.RHYTHM -> "Rhythm exercise"
-                    ExerciseType.INTERVALS -> "Intervals exercise"
-                },
+                text = "Musical Direction",
                 fontSize = 16.sp,
                 color = Color.DarkGray
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            // MAIN EXERCISE CONTENT
-            when (part) {
-                ExerciseType.MELODY -> MelodyExerciseContent()
-                ExerciseType.RHYTHM -> RhythmExerciseContent()
-                ExerciseType.INTERVALS -> IntervalsExerciseContent()
+            // --- Piano Keys (your existing composable) ---
+            PianoKeyboard()
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- Button to add / replace lesson photo ---
+            Button(
+                onClick = { photoPickerLauncher.launch("image/*") }
+            ) {
+                Text(text = if (photoUri == null) "Add lesson photo" else "Change lesson photo")
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // pick / change photo
-            Button(onClick = { photoPickerLauncher.launch("image/*") }) {
-                Text(if (photoUri == null) "Add lesson photo" else "Change lesson photo")
+            // --- Progress Bar (your existing composable) ---
+            LessonProgressBar(progress = 0.6f)
+        }
+
+        // ===== Floating, draggable photo overlay =====
+        FloatingLessonPhoto(photoUri = photoUri)
+    }
+}
+
+/*
+@Composable
+//private fun FloatingLessonPhoto(
+    photoUri: Uri?
+) {
+    if (photoUri == null) return
+
+    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+
+    Box(
+        modifier = Modifier
+            .size(140.dp)
+            // Start somewhere in the bottom-right-ish area
+            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+            .align(Alignment.BottomEnd) // starting anchor
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Black.copy(alpha = 0.2f))
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    change.consume()
+                    offset += dragAmount
+                }
             }
+            .padding(2.dp)
+    ) {
+        AsyncImage(
+            model = photoUri,
+            contentDescription = "Lesson photo",
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+*/
 
-            Spacer(modifier = Modifier.height(16.dp))
+@Composable
+fun PianoKeyboard() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp),
+        contentAlignment = Alignment.Center
+    ) {
 
-            LessonProgressBar(progress = (progressFraction))
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Navigation between parts
-            Button(
-                onClick = {
-                    if (currentIndex < exercises.lastIndex) {
-                        currentIndex++
-                    } else {
-                        onExit()
-                    }
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(if (currentIndex < exercises.lastIndex) "Next part" else "Finish lesson")
+        // --- White Keys Row ---
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            repeat(7) {
+                WhiteKey()
             }
         }
 
-        // Floating draggable photo overlay
-        FloatingLessonPhoto(photoUri = photoUri)
+        // --- Black Keys Row ---
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(22.dp),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 6.dp)
+        ) {
+            BlackKey()
+            BlackKey()
+            Spacer(modifier = Modifier.width(40.dp)) // gap between E/F
+            BlackKey()
+            BlackKey()
+            BlackKey()
+        }
     }
-
 }
 
 @Composable
-private fun LessonProgressBar(progress: Float) {
+fun WhiteKey() {
+    Box(
+        modifier = Modifier
+            .width(48.dp)
+            .height(180.dp)
+            .background(Color.White)
+            .border(2.dp, Color.Black)
+    )
+}
+
+@Composable
+fun BlackKey() {
+    Box(
+        modifier = Modifier
+            .width(32.dp)
+            .height(120.dp)
+            .background(Color.Black, shape = RoundedCornerShape(4.dp))
+    )
+}
+
+@Composable
+fun LessonProgressBar(progress: Float) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "Lesson progress",
@@ -216,79 +224,34 @@ private fun LessonProgressBar(progress: Float) {
     }
 }
 
-
 @Composable
-private fun PianoKeyboard() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // White keys row
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            repeat(7) {
-                Box(
-                    modifier = Modifier
-                        .width(48.dp)
-                        .height(180.dp)
-                        .background(Color.White)
-                        .border(2.dp, Color.Black)
-                )
-            }
-        }
-
-        // Black keys row (simple, stylised)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(22.dp),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 6.dp)
-        ) {
-            @Composable
-            fun blackKey() = Box(
-                modifier = Modifier
-                    .width(32.dp)
-                    .height(120.dp)
-                    .background(Color.Black, shape = RoundedCornerShape(4.dp))
-            )
-
-            blackKey()
-            blackKey()
-            Spacer(modifier = Modifier.width(40.dp)) // E–F gap
-            blackKey()
-            blackKey()
-            blackKey()
-        }
-    }
-}
-
-@Composable
-private fun FloatingLessonPhoto(photoUri: Uri?) {
+private fun FloatingLessonPhoto(
+    photoUri: Uri?
+) {
     if (photoUri == null) return
 
-    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
 
     Box(
         modifier = Modifier
+            .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
             .size(140.dp)
-            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.2f))
             .pointerInput(Unit) {
                 detectDragGestures { _, dragAmount ->
-                    offset += dragAmount
+                    offsetX += dragAmount.x
+                    offsetY += dragAmount.y
                 }
             }
-            .padding(2.dp)
     ) {
         AsyncImage(
             model = photoUri,
-            contentDescription = "Lesson photo",
-            modifier = Modifier.fillMaxSize()
+            contentDescription = "Lesson Photo",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
     }
 }
+

@@ -12,8 +12,4 @@ class UserRepository(private val dao: UserDao) {
     suspend fun createUser(user: UserEntity) = dao.insertUser(user)
 
     suspend fun deleteUser(user: UserEntity) = dao.deleteUser(user)
-
-    suspend fun updateExperienceLabel(userId: Int, label: String?) =
-        dao.updateExperienceLabel(userId, label)
-
 }

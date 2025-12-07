@@ -12,15 +12,12 @@ import org.androidstudio.notely.ui.screens.QuestionnaireScreen
 import org.androidstudio.notely.ui.screens.AccountScreen
 import org.androidstudio.notely.ui.viewmodel.UserViewModel
 import org.androidstudio.notely.ui.viewmodel.UserViewModelFactory
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-import org.androidstudio.notely.ui.navigation.NavRoutes
-
 
 @Composable
 fun NotelyNavHost(navController: NavHostController) {
     val context = LocalContext.current
 
+    // Shared UserViewModel for account stuff
     val userViewModel: UserViewModel = viewModel(
         factory = UserViewModelFactory.fromContext(context)
     )
@@ -42,32 +39,18 @@ fun NotelyNavHost(navController: NavHostController) {
 
         composable(NavRoutes.Home.route) {
             HomeScreen(
-                onSelectLesson = { lessonId ->
-                    navController.navigate(NavRoutes.Lesson.routeWithId(lessonId))
-                },
+                onStartLesson = { navController.navigate(NavRoutes.Lesson.route) },
                 onQuestionnaire = { navController.navigate(NavRoutes.Questionnaire.route) },
                 onAccounts = { navController.navigate(NavRoutes.Accounts.route) }
             )
         }
 
-        composable(
-            route = NavRoutes.Lesson.route,
-            arguments = listOf(navArgument("lessonId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val lessonId = backStackEntry.arguments?.getInt("lessonId") ?: 1
-
-            LessonScreen(
-                lessonId = lessonId,
-                onExit = { navController.popBackStack() }
-            )
+        composable(NavRoutes.Lesson.route) {
+            LessonScreen(onExit = { navController.popBackStack() })
         }
 
-
         composable(NavRoutes.Questionnaire.route) {
-            QuestionnaireScreen(
-                userViewModel = userViewModel,
-                onDone = { navController.popBackStack() }
-            )
+            QuestionnaireScreen(onSubmit = { navController.popBackStack() })
         }
     }
 }

@@ -20,8 +20,5 @@ interface UserDao {
 
     @Delete
     suspend fun deleteUser(user: UserEntity)
-
-    @Query("UPDATE users SET experienceLabel = :label WHERE id = :userId")
-    suspend fun updateExperienceLabel(userId: Int, label: String?)
 }
 
