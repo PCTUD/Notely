@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 import org.androidstudio.notely.data.entity.UserEntity
 import org.androidstudio.notely.data.repository.RandomEmojiProvider
 import org.androidstudio.notely.ui.viewmodel.UserViewModel
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+
 
 
 @Composable
@@ -76,6 +79,9 @@ fun AccountScreen(
                                 viewModel.setActiveUser(user.id, user.name)
                                 onContinue()
                             }
+                        },
+                        onDelete = {
+                            viewModel.deleteUser(user)
                         }
                     )
                 }
@@ -111,25 +117,18 @@ fun AccountScreen(
         Button(
             onClick = {
                 if (name.isNotBlank()) {
-                    scope.launch {
-                        // Add the user (and make them active, if your VM doesn’t already)
-                        viewModel.addUser(name.trim(), emoji)
-
-                        // Optionally: ensure the new user is set as active here
-                        // viewModel.setActiveUserToMostRecent()  <-- whatever function you have
-
-                        name = ""
-                        emoji = RandomEmojiProvider.randomEmoji()
-
-                        // Navigate to questionnaire
-                        onNewAccountCreated()
-                    }
+                    val trimmed = name.trim()
+                    viewModel.addUser(trimmed, emoji)
+                    name = ""
+                    emoji = RandomEmojiProvider.randomEmoji()
+                    onNewAccountCreated()   // navigate to Questionnaire
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Create account")
         }
+
     }
 }
 
@@ -137,7 +136,8 @@ fun AccountScreen(
 private fun AccountRow(
     user: UserEntity,
     isActive: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -157,6 +157,7 @@ private fun AccountRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // LEFT: emoji + name + score
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -170,19 +171,30 @@ private fun AccountRow(
 
                     user.abilityScore?.let { score ->
                         Text(
-                            text = "•  Skill ${"%.1f".format(score)}/7.5",
+                            text = "• Skill ${"%.1f".format(score)}/7.5",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
+            }
 
+            // RIGHT: "Current" label + Delete button
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 if (isActive) {
                     Text(
                         text = "Current",
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
+
+                TextButton(
+                    onClick = onDelete,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Delete")
+                }
             }
         }
     }
 }
+

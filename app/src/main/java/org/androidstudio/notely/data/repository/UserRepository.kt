@@ -9,7 +9,9 @@ class UserRepository(private val dao: UserDao) {
 
     fun getUsers(): Flow<List<UserEntity>> = dao.getUsers()
 
-    suspend fun createUser(user: UserEntity) = dao.insertUser(user)
+    suspend fun createUser(user: UserEntity): Int {
+        return dao.insertUser(user).toInt()   // <— return new PK
+    }
 
     suspend fun deleteUser(user: UserEntity) = dao.deleteUser(user)
 
@@ -17,4 +19,5 @@ class UserRepository(private val dao: UserDao) {
         dao.updateAbilityScore(userId, score)
     }
 }
+
 

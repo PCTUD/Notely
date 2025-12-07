@@ -16,13 +16,11 @@ interface UserDao {
     fun getUsers(): Flow<List<UserEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUser(user: UserEntity)
+    suspend fun insertUser(user: UserEntity): Long   // <— changed
 
     @Delete
     suspend fun deleteUser(user: UserEntity)
 
     @Query("UPDATE users SET abilityScore = :score WHERE id = :userId")
     suspend fun updateAbilityScore(userId: Int, score: Double)
-
 }
-

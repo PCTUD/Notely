@@ -36,12 +36,19 @@ class UserViewModel(
     fun setActiveUser(userId: Int, userName: String) {
         viewModelScope.launch {
             activeUserStore.setActiveUser(userId, userName)
+            _currentUserId.value = userId
         }
     }
 
     fun addUser(name: String, emoji: String) {
         viewModelScope.launch {
-            userRepository.createUser(UserEntity(name = name, emoji = emoji))
+            val trimmed = name.trim()
+            val userId = userRepository.createUser(
+                UserEntity(name = trimmed, emoji = emoji)
+            )
+            // newly created user becomes the active one
+            activeUserStore.setActiveUser(userId, trimmed)
+            _currentUserId.value = userId         // <— crucial line
         }
     }
 
@@ -75,6 +82,16 @@ class UserViewModel(
             practiceFrequency = practiceFrequency!!,
             score = score
         )
+    }
+
+    fun deleteUser(user: UserEntity) {
+        viewModelScope.launch {
+            userRepository.deleteUser(user)
+            // (optional) if you want to clear currentUserId when deleting the active user:
+            if (currentUserId.value == user.id) {
+                _currentUserId.value = null
+            }
+        }
     }
 }
 
