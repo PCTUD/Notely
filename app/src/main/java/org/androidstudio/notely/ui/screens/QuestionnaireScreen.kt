@@ -28,12 +28,28 @@ data class QuestionnaireResult(
     val practiceFrequency: Int?
 )
 
+fun QuestionnaireResult.calculateScore(): Double {
+    var score = 0.0
+
+    if (playedBefore == true) score += 1.0
+    if (grade4 == true) score += 1.0
+    if (grade6 == true) score += 1.0
+    if (grade8 == true) score += 1.0
+    if (circleOfFifths == true) score += 1.0
+
+    practiceFrequency?.let { freq ->
+        score += freq * 0.5          // 0.5 per practice per week
+    }
+
+    return score.coerceAtMost(7.5)   // 5x “1-point” questions + 2.5 max for practice
+}
+
 // -------------------------------------------------------------
 // MAIN SCREEN
 // -------------------------------------------------------------
 @Composable
 fun QuestionnaireScreen(
-    onSubmit: (QuestionnaireResult) -> Unit
+    onSubmit: (QuestionnaireResult, Double) -> Unit
 ) {
     // Local state for answers
     var playedBefore by remember { mutableStateOf<Boolean?>(null) }
@@ -121,24 +137,17 @@ fun QuestionnaireScreen(
             item {
                 Button(
                     onClick = {
-                        onSubmit(
-                            QuestionnaireResult(
-                                playedBefore,
-                                grade4,
-                                grade6,
-                                grade8,
-                                circleOfFifths,
-                                practiceFreq
-                            )
+                        val result = QuestionnaireResult(
+                            playedBefore,
+                            grade4,
+                            grade6,
+                            grade8,
+                            circleOfFifths,
+                            practiceFreq
                         )
-                    },
-                    enabled = playedBefore != null &&
-                            grade4 != null &&
-                            grade6 != null &&
-                            grade8 != null &&
-                            circleOfFifths != null &&
-                            practiceFreq != null,
-                    modifier = Modifier.fillMaxWidth()
+                        val score = result.calculateScore()
+                        onSubmit(result, score)
+                    }
                 ) {
                     Text("Submit")
                 }
@@ -223,8 +232,9 @@ fun PracticeFrequencySelector(
 //--------------------------------------------------------------
 // PREVIEW
 //--------------------------------------------------------------
-@Composable
 @Preview(showBackground = true)
+@Composable
 fun QuestionnairePreview() {
-    QuestionnaireScreen(onSubmit = {})
+    QuestionnaireScreen(onSubmit = { _, _ -> })
 }
+

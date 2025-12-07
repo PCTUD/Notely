@@ -9,10 +9,16 @@ import kotlinx.coroutines.launch
 import org.androidstudio.notely.data.datastore.ActiveUserStore
 import org.androidstudio.notely.data.entity.UserEntity
 import org.androidstudio.notely.data.repository.UserRepository
+import org.androidstudio.notely.data.repository.QuestionnaireRepository
+import org.androidstudio.notely.data.entity.QuestionnaireResponseEntity
+import org.androidstudio.notely.ui.screens.QuestionnaireResult
+
+
 
 class UserViewModel(
     private val userRepository: UserRepository,
-    private val activeUserStore: ActiveUserStore
+    private val activeUserStore: ActiveUserStore,
+    private val questionnaireRepository: QuestionnaireRepository
 ) : ViewModel() {
 
     private val _currentUserId = MutableStateFlow<Int?>(null)
@@ -38,4 +44,38 @@ class UserViewModel(
             userRepository.createUser(UserEntity(name = name, emoji = emoji))
         }
     }
+
+    fun saveQuestionnaireForCurrentUser(
+        result: QuestionnaireResult,
+        score: Double
+    ) {
+        viewModelScope.launch {
+            val userId = currentUserId.value ?: return@launch
+
+            // 1) Save detailed response
+            val entity = result.toEntity(userId, score)
+            questionnaireRepository.saveResponse(entity)
+
+            // 2) Save summary score on the user
+            userRepository.setAbilityScore(userId, score)
+        }
+    }
+
+    private fun QuestionnaireResult.toEntity(
+        userId: Int,
+        score: Double
+    ): QuestionnaireResponseEntity {
+        return QuestionnaireResponseEntity(
+            userId = userId,
+            playedBefore = playedBefore!!,
+            grade4 = grade4!!,
+            grade6 = grade6!!,
+            grade8 = grade8!!,
+            circleOfFifths = circleOfFifths!!,
+            practiceFrequency = practiceFrequency!!,
+            score = score
+        )
+    }
 }
+
+

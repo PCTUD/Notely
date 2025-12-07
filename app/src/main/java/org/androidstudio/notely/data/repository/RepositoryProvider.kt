@@ -12,10 +12,10 @@ object RepositoryProvider {
     fun userRepository(context: Context): UserRepository =
         UserRepository(DatabaseProvider.get(context).userDao())
 
-    fun exerciseRepository(context: Context): ExerciseRepository =
+    fun exerciseRepository(context: Context): ExerciseRepository =  // Note: This function will likely be deleted
         ExerciseRepository(DatabaseProvider.get(context).exerciseDao())
 
-    fun progressRepository(context: Context): LessonProgressRepository =
+    fun progressRepository(context: Context): LessonProgressRepository = // Note: This function will likely be deleted
         LessonProgressRepository(DatabaseProvider.get(context).lessonProgressDao())
 
     fun questionnaireRepository(context: Context): QuestionnaireRepository =

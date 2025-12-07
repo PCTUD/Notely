@@ -7,5 +7,7 @@ import androidx.room.PrimaryKey
 data class UserEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val emoji: String
+    val emoji: String,
+    val abilityScore: Double? = null,
+    val currentLessonId: Int? = null //might remove
 )

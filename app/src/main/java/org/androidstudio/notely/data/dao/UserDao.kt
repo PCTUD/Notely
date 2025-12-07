@@ -20,5 +20,9 @@ interface UserDao {
 
     @Delete
     suspend fun deleteUser(user: UserEntity)
+
+    @Query("UPDATE users SET abilityScore = :score WHERE id = :userId")
+    suspend fun updateAbilityScore(userId: Int, score: Double)
+
 }
 

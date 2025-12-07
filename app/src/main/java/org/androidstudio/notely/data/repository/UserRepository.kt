@@ -12,4 +12,9 @@ class UserRepository(private val dao: UserDao) {
     suspend fun createUser(user: UserEntity) = dao.insertUser(user)
 
     suspend fun deleteUser(user: UserEntity) = dao.deleteUser(user)
+
+    suspend fun setAbilityScore(userId: Int, score: Double) {
+        dao.updateAbilityScore(userId, score)
+    }
 }
+

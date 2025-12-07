@@ -15,6 +15,9 @@ object DatabaseProvider {
                 context.applicationContext,
                 NotelyDatabase::class.java,
                 "notely.db"
-            ).build().also { INSTANCE = it }
+            )
+                .fallbackToDestructiveMigration()  // <-- drop & recreate on version bump
+                .build()
+                .also { INSTANCE = it }
         }
 }

@@ -7,13 +7,18 @@ import org.androidstudio.notely.data.entity.QuestionnaireResponseEntity
 
 @Dao
 interface QuestionnaireDao {
-    //sets user response in the database, defining the user's experience level
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertResponse(response: QuestionnaireResponseEntity)
 
-    @Query("SELECT * FROM questionnaire_responses ORDER BY id DESC LIMIT 1")
-    fun getLatestResponse(): Flow<QuestionnaireResponseEntity?>
+    @Query("""
+        SELECT * FROM questionnaire_responses
+        WHERE userId = :userId
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+    fun getLatestResponseForUser(userId: Int): Flow<QuestionnaireResponseEntity?>
 
-    @Query("DELETE FROM questionnaire_responses")
-    suspend fun clearAll()
+    @Query("DELETE FROM questionnaire_responses WHERE userId = :userId")
+    suspend fun clearAllForUser(userId: Int)
 }

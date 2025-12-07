@@ -33,6 +33,9 @@ fun NotelyNavHost(navController: NavHostController) {
                     navController.navigate(NavRoutes.Home.route) {
                         popUpTo(NavRoutes.Accounts.route) { inclusive = true }
                     }
+                },
+                onNewAccountCreated = {
+                    navController.navigate(NavRoutes.Questionnaire.route)
                 }
             )
         }
@@ -50,7 +53,15 @@ fun NotelyNavHost(navController: NavHostController) {
         }
 
         composable(NavRoutes.Questionnaire.route) {
-            QuestionnaireScreen(onSubmit = { navController.popBackStack() })
+            QuestionnaireScreen { result, score ->
+                userViewModel.saveQuestionnaireForCurrentUser(result, score)
+
+                // After questionnaire, send them to Home (or back to Accounts; your choice)
+                navController.navigate(NavRoutes.Home.route) {
+                    popUpTo(NavRoutes.Accounts.route) { inclusive = true }
+                }
+            }
         }
+
     }
 }

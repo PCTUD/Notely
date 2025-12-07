@@ -25,7 +25,8 @@ import org.androidstudio.notely.ui.viewmodel.UserViewModel
 @Composable
 fun AccountScreen(
     viewModel: UserViewModel,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,             //select existing account
+    onNewAccountCreated: () -> Unit     //create new account
 ) {
     val scope = rememberCoroutineScope()
 
@@ -111,9 +112,17 @@ fun AccountScreen(
             onClick = {
                 if (name.isNotBlank()) {
                     scope.launch {
+                        // Add the user (and make them active, if your VM doesn’t already)
                         viewModel.addUser(name.trim(), emoji)
+
+                        // Optionally: ensure the new user is set as active here
+                        // viewModel.setActiveUserToMostRecent()  <-- whatever function you have
+
                         name = ""
                         emoji = RandomEmojiProvider.randomEmoji()
+
+                        // Navigate to questionnaire
+                        onNewAccountCreated()
                     }
                 }
             },
@@ -149,18 +158,30 @@ private fun AccountRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(
-                    text = "${user.emoji}  ${user.name}",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "${user.emoji}  ${user.name}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
 
-            if (isActive) {
-                Text(
-                    text = "Current",
-                    style = MaterialTheme.typography.labelMedium
-                )
+                    user.abilityScore?.let { score ->
+                        Text(
+                            text = "•  Skill ${"%.1f".format(score)}/7.5",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                if (isActive) {
+                    Text(
+                        text = "Current",
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
             }
         }
     }
