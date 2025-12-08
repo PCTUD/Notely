@@ -20,16 +20,18 @@ import kotlinx.coroutines.launch
 import org.androidstudio.notely.data.entity.UserEntity
 import org.androidstudio.notely.data.repository.RandomEmojiProvider
 import org.androidstudio.notely.ui.viewmodel.UserViewModel
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 
-
+/* AccountScreen: lets the user pick an existing account or create a new
+one. Existing accounts are listed from Room, showing per-user emoji and
+ability score. New accounts are created with a name and random emoji,
+and the active user is updated when an account is selected. */
 
 @Composable
 fun AccountScreen(
     viewModel: UserViewModel,
-    onContinue: () -> Unit,             //select existing account
-    onNewAccountCreated: () -> Unit     //create new account
+    onContinue: () -> Unit,             // navigate with existing account
+    onNewAccountCreated: () -> Unit     // navigate after new account
 ) {
     val scope = rememberCoroutineScope()
 
@@ -38,12 +40,15 @@ fun AccountScreen(
         viewModel.loadActiveUser()
     }
 
+    // all users from Room
     val users by viewModel
         .getAllUsers()
         .collectAsState(initial = emptyList<UserEntity>())
 
+    // Currently active user id
     val currentUserId by viewModel.currentUserId.collectAsState()
 
+    // New account name + emoji
     var name by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf(RandomEmojiProvider.randomEmoji()) }
 
@@ -59,7 +64,7 @@ fun AccountScreen(
             fontWeight = FontWeight.Bold
         )
 
-        // Existing users
+        // Existing users section
         if (users.isNotEmpty()) {
             Text(
                 text = "Choose an account:",
@@ -75,12 +80,14 @@ fun AccountScreen(
                         user = user,
                         isActive = user.id == currentUserId,
                         onClick = {
+                            // Set active user then continue
                             scope.launch {
                                 viewModel.setActiveUser(user.id, user.name)
                                 onContinue()
                             }
                         },
                         onDelete = {
+                            // Remove this user from Room
                             viewModel.deleteUser(user)
                         }
                     )
@@ -90,7 +97,7 @@ fun AccountScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // New account
+        // New account section
         Text(
             text = "Create a new account",
             style = MaterialTheme.typography.titleMedium
@@ -107,13 +114,16 @@ fun AccountScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Show chosen emoji
             Text(text = "Emoji: $emoji", style = MaterialTheme.typography.bodyLarge)
 
+            // Shuffle emoji button
             Button(onClick = { emoji = RandomEmojiProvider.randomEmoji() }) {
                 Text("Shuffle")
             }
         }
 
+        // Create account button
         Button(
             onClick = {
                 if (name.isNotBlank()) {
@@ -128,10 +138,11 @@ fun AccountScreen(
         ) {
             Text("Create account")
         }
-
     }
 }
 
+/* AccountRow: one account row showing emoji, name, optional ability
+score, current-user label, and a delete button. */
 @Composable
 private fun AccountRow(
     user: UserEntity,
@@ -142,7 +153,7 @@ private fun AccountRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { onClick() }, // select this user
         colors = CardDefaults.cardColors(
             containerColor = if (isActive)
                 MaterialTheme.colorScheme.primaryContainer
@@ -157,7 +168,7 @@ private fun AccountRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // LEFT: emoji + name + score
+            // LEFT: emoji + name + skill
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -169,6 +180,7 @@ private fun AccountRow(
                         fontWeight = FontWeight.SemiBold
                     )
 
+                    // Optional ability score label
                     user.abilityScore?.let { score ->
                         Text(
                             text = "• Skill ${"%.1f".format(score)}/7.5",
@@ -197,4 +209,3 @@ private fun AccountRow(
         }
     }
 }
-

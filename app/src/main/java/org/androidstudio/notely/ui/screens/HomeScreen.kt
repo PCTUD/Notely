@@ -19,6 +19,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
 
+/* HomeScreen: Notely title bar, link to the Accounts screen, and a 2×2 grid
+of lesson cards. Each card displays lesson-specific progress loaded from
+Room via LessonProgressViewModel for the current user. */
+
 @Composable
 fun HomeScreen(
     lessonProgressViewModel: LessonProgressViewModel,
@@ -26,13 +30,13 @@ fun HomeScreen(
     onQuestionnaire: () -> Unit,
     onAccounts: () -> Unit
 ) {
-    // One progress value per lesson
+    // Per-lesson progress state (0f..1f)
     var melodyProgress by remember { mutableStateOf(0f) }
     var harmonyProgress by remember { mutableStateOf(0f) }
     var chordsProgress by remember { mutableStateOf(0f) }
     var scalesProgress by remember { mutableStateOf(0f) }
 
-    // Load from DB when the screen first shows
+    // Load progress from Room when the screen first appears
     LaunchedEffect(Unit) {
         melodyProgress = lessonProgressViewModel.getProgress(LessonType.MELODY.lessonId)
         harmonyProgress = lessonProgressViewModel.getProgress(LessonType.HARMONY.lessonId)
@@ -46,6 +50,7 @@ fun HomeScreen(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // App title header
         Text(
             text = "Notely",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -53,6 +58,7 @@ fun HomeScreen(
             color = Color(0xFFFF6A4D)
         )
 
+        // Top row: app title + Accounts link
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,12 +66,14 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Small Notely label (left)
             Text(
                 text = "Notely",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
 
+            // Accounts navigation (right)
             Text(
                 text = "Accounts",
                 modifier = Modifier.clickable { onAccounts() },
@@ -74,6 +82,7 @@ fun HomeScreen(
             )
         }
 
+        // Row 1: Melody + Harmony cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -82,19 +91,20 @@ fun HomeScreen(
                 title = "Open this melody exercise in order to continue your melody learning journey",
                 progress = melodyProgress,
                 icon = "♪",
-                onClick = { onStartLesson(LessonType.MELODY) }
+                onClick = { onStartLesson(LessonType.MELODY) } // Open melody lesson
             )
 
             ExerciseCard(
                 title = "Begin your Harmony exercise",
                 progress = harmonyProgress,
                 icon = "𝄞",
-                onClick = { onStartLesson(LessonType.HARMONY) }
+                onClick = { onStartLesson(LessonType.HARMONY) } // Open harmony lesson
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Row 2: Chords + Scales cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -103,19 +113,22 @@ fun HomeScreen(
                 title = "Begin your chord exercise",
                 progress = chordsProgress,
                 icon = "🎵",
-                onClick = { onStartLesson(LessonType.CHORDS) }
+                onClick = { onStartLesson(LessonType.CHORDS) } // Open chords lesson
             )
 
             ExerciseCard(
                 title = "Begin your scale exercise",
                 progress = scalesProgress,
                 icon = "♩",
-                onClick = { onStartLesson(LessonType.SCALES) }
+                onClick = { onStartLesson(LessonType.SCALES) } // Open scales lesson
             )
         }
     }
 }
 
+/* Lesson tile card.
+Reusable composable that displays a single lesson tile with an icon, a short
+description, and a red progress bar whose fill is driven by [progress].*/
 @Composable
 private fun ExerciseCard(
     title: String,
@@ -127,7 +140,7 @@ private fun ExerciseCard(
         modifier = Modifier
             .width(150.dp)
             .height(220.dp)
-            .clickable { onClick() },
+            .clickable { onClick() }, // Navigate to chosen lesson
         shape = RoundedCornerShape(8.dp),
         border = BorderStroke(2.dp, Color.Gray),
         colors = CardDefaults.cardColors(containerColor = Color.White)
@@ -139,6 +152,7 @@ private fun ExerciseCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Lesson icon
             Text(
                 text = icon,
                 fontSize = 32.sp,
@@ -146,6 +160,7 @@ private fun ExerciseCard(
                 modifier = Modifier.padding(top = 8.dp)
             )
 
+            // Lesson description
             Text(
                 text = title,
                 fontSize = 12.sp,
@@ -154,6 +169,7 @@ private fun ExerciseCard(
                 lineHeight = 14.sp
             )
 
+            // Progress bar container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -161,10 +177,11 @@ private fun ExerciseCard(
                     .padding(bottom = 8.dp)
                     .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
             ) {
+                // Red progress segment
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(progress)
+                        .fillMaxWidth(progress) // Width proportional to progress 0f..1f
                         .padding(1.dp)
                         .background(Color(0xFFFF6A4D))
                 )

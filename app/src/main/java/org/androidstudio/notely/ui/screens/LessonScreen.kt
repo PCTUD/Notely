@@ -31,6 +31,11 @@ import kotlin.math.roundToInt
 import org.androidstudio.notely.R
 import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
 
+/* LessonScreen: shows a single lesson with a back arrow, lesson title,
+a playable piano keyboard, a gallery-picked lesson photo and a red
+progress bar. Progress is stored per-user, per-lesson via Room and
+updated each time the user plays notes. */
+
 @Composable
 fun LessonScreen(
     lessonType: LessonType,
@@ -39,13 +44,14 @@ fun LessonScreen(
 ) {
     val context = LocalContext.current
 
-    // ---- SoundPool piano setup ----
+    // SoundPool: load short note samples
     val soundPool = remember {
         SoundPool.Builder()
             .setMaxStreams(4)
             .build()
     }
 
+    // Note name → loaded sound id
     val noteSounds = remember {
         mapOf(
             "C4" to soundPool.load(context, R.raw.c4, 1),
@@ -63,17 +69,20 @@ fun LessonScreen(
         )
     }
 
+    // Release SoundPool when composable leaves
     DisposableEffect(Unit) {
         onDispose { soundPool.release() }
     }
 
-    // ---- Progress (0f..1f), loaded from DB ----
+    // Progress (0f..1f) backed by Room
     var progress by remember { mutableStateOf(0f) }
 
+    // Load saved progress for this lesson
     LaunchedEffect(lessonType) {
         progress = progressViewModel.getProgress(lessonType.lessonId)
     }
 
+    // Play a note + bump progress
     fun playNote(note: String) {
         noteSounds[note]?.let { id ->
             soundPool.play(id, 1f, 1f, 1, 0, 1f)
@@ -83,16 +92,17 @@ fun LessonScreen(
         progressViewModel.setProgress(lessonType.lessonId, newProgress)
     }
 
-    // ---- Photo picker ----
+    // Photo Uri for lesson overlay
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Gallery picker launcher
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) photoUri = uri
     }
 
-    // ---- Layout ----
+    // Main lesson layout
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -101,6 +111,7 @@ fun LessonScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
+            // Back arrow + title
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -123,6 +134,7 @@ fun LessonScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Lesson subtitle
             Text(
                 text = lessonType.subtitle,
                 fontSize = 16.sp,
@@ -131,25 +143,31 @@ fun LessonScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
+            // Piano keyboard interaction
             PianoKeyboard(onKeyPressed = ::playNote)
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Add or change lesson photo
             Button(onClick = { photoPickerLauncher.launch("image/*") }) {
                 Text(text = if (photoUri == null) "Add lesson photo" else "Change lesson photo")
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Progress bar linked to Room
             LessonProgressBar(progress = progress)
         }
 
+        // Draggable lesson photo overlay
         FloatingLessonPhoto(photoUri = photoUri)
     }
 }
 
 // ---------- Piano keyboard composables ----------
 
+/* PianoKeyboard: one-octave keyboard with clickable white and black keys.
+Each key calls [onKeyPressed] with a note name when tapped. */
 @Composable
 fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
     Box(
@@ -189,6 +207,7 @@ fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
     }
 }
 
+/* WhiteKey: single white piano key box. */
 @Composable
 fun WhiteKey(onClick: () -> Unit) {
     Box(
@@ -201,6 +220,7 @@ fun WhiteKey(onClick: () -> Unit) {
     )
 }
 
+/* BlackKey: single black piano key box. */
 @Composable
 fun BlackKey(onClick: () -> Unit) {
     Box(
@@ -214,6 +234,7 @@ fun BlackKey(onClick: () -> Unit) {
 
 // ---------- Progress bar & floating photo ----------
 
+/* LessonProgressBar: labelled red progress bar for the current lesson. */
 @Composable
 fun LessonProgressBar(progress: Float) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -239,6 +260,7 @@ fun LessonProgressBar(progress: Float) {
     }
 }
 
+/* FloatingLessonPhoto: draggable lesson image overlay chosen from gallery. */
 @Composable
 private fun FloatingLessonPhoto(photoUri: Uri?) {
     if (photoUri == null) return
@@ -253,6 +275,7 @@ private fun FloatingLessonPhoto(photoUri: Uri?) {
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Black.copy(alpha = 0.2f))
             .pointerInput(Unit) {
+                // Drag gesture updates overlay offset
                 detectDragGestures { _, dragAmount ->
                     offsetX += dragAmount.x
                     offsetY += dragAmount.y

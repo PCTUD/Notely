@@ -16,9 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 
 
-// -------------------------------------------------------------
 // DATA CLASS – answers collected from the questionnaire
-// -------------------------------------------------------------
 data class QuestionnaireResult(
     val playedBefore: Boolean?,
     val grade4: Boolean?,
@@ -44,9 +42,7 @@ fun QuestionnaireResult.calculateScore(): Double {
     return score.coerceAtMost(7.5)   // 5x “1-point” questions + 2.5 max for practice
 }
 
-// -------------------------------------------------------------
 // MAIN SCREEN
-// -------------------------------------------------------------
 @Composable
 fun QuestionnaireScreen(
     onSubmit: (QuestionnaireResult, Double) -> Unit
@@ -156,9 +152,7 @@ fun QuestionnaireScreen(
     }
 }
 
-//--------------------------------------------------------------
 // YES-NO QUESTION CARD
-//--------------------------------------------------------------
 @Composable
 fun QuestionYesNo(
     text: String,
@@ -195,9 +189,7 @@ fun YesNoOption(symbol: String, selected: Boolean, onClick: () -> Unit) {
     )
 }
 
-//--------------------------------------------------------------
 // PRACTICE FREQUENCY SELECTOR
-//--------------------------------------------------------------
 @Composable
 fun PracticeFrequencySelector(
     selected: Int?,
@@ -229,9 +221,7 @@ fun PracticeFrequencySelector(
     }
 }
 
-//--------------------------------------------------------------
 // PREVIEW
-//--------------------------------------------------------------
 @Preview(showBackground = true)
 @Composable
 fun QuestionnairePreview() {
