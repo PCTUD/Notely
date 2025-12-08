@@ -62,6 +62,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.androidx.compose.foundation)
     implementation("androidx.compose.foundation:foundation")
+    implementation(libs.androidx.foundation)
 
 
     // Debug + Preview

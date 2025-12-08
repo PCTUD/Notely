@@ -8,5 +8,5 @@ data class LessonProgressEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val userId: Int,        // NEW
     val lessonId: Int,
-    val completedExercisesCount: Int = 0 // 0–3
+    val completedExercisesCount: Int = 0 // 0–10
 )

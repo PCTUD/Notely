@@ -26,12 +26,76 @@ import kotlin.math.roundToInt
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.ui.layout.ContentScale
+import android.media.SoundPool
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.platform.LocalContext
+import org.androidstudio.notely.ui.screens.LessonType
+import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
+import org.androidstudio.notely.R
+import org.androidstudio.notely.ui.screens.PianoKeyboard
+import org.androidstudio.notely.ui.navigation.NotelyNavHost
 
 
 @Composable
 fun LessonScreen(
+    lessonType: LessonType,
+    progressViewModel: LessonProgressViewModel,
     onExit: () -> Unit
 ) {
+
+
+    // === START piano keyboard mechanics ===
+    val context = LocalContext.current
+
+    // SoundPool for short piano notes
+    val soundPool = remember {
+        SoundPool.Builder()
+            .setMaxStreams(4)
+            .build()
+    }
+
+    // Map note names to loaded sound IDs
+    val noteSounds = remember {
+        mapOf(
+            "C4" to soundPool.load(context, R.raw.c4, 1),
+            "C#4" to soundPool.load(context, R.raw.cs4, 1),
+            "D4" to soundPool.load(context, R.raw.d4, 1),
+            "D#4" to soundPool.load(context, R.raw.ds4, 1),
+            "E4" to soundPool.load(context, R.raw.e4, 1),
+            "F4" to soundPool.load(context, R.raw.f4, 1),
+            "F#4" to soundPool.load(context, R.raw.fs4, 1),
+            "G4" to soundPool.load(context, R.raw.g4, 1),
+            "G#4" to soundPool.load(context, R.raw.gs4, 1),
+            "A5" to soundPool.load(context, R.raw.a5, 1),
+            "A#5" to soundPool.load(context, R.raw.as5, 1),
+            "B5" to soundPool.load(context, R.raw.b5, 1)
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { soundPool.release() }
+    }
+
+    // Shared lesson progress 0f..1f
+    var progress by remember { mutableStateOf(0f) }
+
+    // Load stored progress for this lesson when the screen opens
+    LaunchedEffect(lessonType) {
+        progress = progressViewModel.getProgress(lessonType.lessonId)
+    }
+
+    fun playNote(note: String) {
+        noteSounds[note]?.let { id ->
+            soundPool.play(id, 1f, 1f, 1, 0, 1f)
+        }
+        // For demo: each key press nudges progress by 5% (20 key presses to fill)
+        progress = (progress + 0.05f).coerceAtMost(1f)
+        progressViewModel.setProgress(lessonType.lessonId, progress)
+    }
+    // === END piano keyboard mechanics ===
+
+
+
     // ---- Local state for the chosen photo ----
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -68,7 +132,7 @@ fun LessonScreen(
                 )
 
                 Text(
-                    text = "Melodies 1",
+                    text = lessonType.title,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
@@ -78,15 +142,15 @@ fun LessonScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Musical Direction",
+                text = lessonType.subtitle,
                 fontSize = 16.sp,
                 color = Color.DarkGray
             )
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- Piano Keys (your existing composable) ---
-            PianoKeyboard()
+            // Piano Keys takes a callback
+            PianoKeyboard(onKeyPressed = ::playNote)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -100,7 +164,7 @@ fun LessonScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // --- Progress Bar (your existing composable) ---
-            LessonProgressBar(progress = 0.6f)
+            LessonProgressBar(progress = progress)
         }
 
         // ===== Floating, draggable photo overlay =====
@@ -108,42 +172,10 @@ fun LessonScreen(
     }
 }
 
-/*
+
+// PianoKeyboard, WhiteKey, BlackKey all for piano functionaility
 @Composable
-//private fun FloatingLessonPhoto(
-    photoUri: Uri?
-) {
-    if (photoUri == null) return
-
-    var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-
-    Box(
-        modifier = Modifier
-            .size(140.dp)
-            // Start somewhere in the bottom-right-ish area
-            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
-            .align(Alignment.BottomEnd) // starting anchor
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.Black.copy(alpha = 0.2f))
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    offset += dragAmount
-                }
-            }
-            .padding(2.dp)
-    ) {
-        AsyncImage(
-            model = photoUri,
-            contentDescription = "Lesson photo",
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-*/
-
-@Composable
-fun PianoKeyboard() {
+fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,51 +183,57 @@ fun PianoKeyboard() {
         contentAlignment = Alignment.Center
     ) {
 
-        // --- White Keys Row ---
+        // White keys: C D E F G A B
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            repeat(7) {
-                WhiteKey()
-            }
+            WhiteKey { onKeyPressed("C4") }
+            WhiteKey { onKeyPressed("D4") }
+            WhiteKey { onKeyPressed("E4") }
+            WhiteKey { onKeyPressed("F4") }
+            WhiteKey { onKeyPressed("G4") }
+            WhiteKey { onKeyPressed("A5") }
+            WhiteKey { onKeyPressed("B5") }
         }
 
-        // --- Black Keys Row ---
+        // Black keys: C#, D#,   F#, G#, A#
         Row(
             horizontalArrangement = Arrangement.spacedBy(22.dp),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 6.dp)
         ) {
-            BlackKey()
-            BlackKey()
+            BlackKey { onKeyPressed("C#4") }
+            BlackKey { onKeyPressed("D#4") }
             Spacer(modifier = Modifier.width(40.dp)) // gap between E/F
-            BlackKey()
-            BlackKey()
-            BlackKey()
+            BlackKey { onKeyPressed("F#4") }
+            BlackKey { onKeyPressed("G#4") }
+            BlackKey { onKeyPressed("A#5") }
         }
     }
 }
 
 @Composable
-fun WhiteKey() {
+fun WhiteKey(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .width(48.dp)
             .height(180.dp)
             .background(Color.White)
             .border(2.dp, Color.Black)
+            .clickable { onClick() }
     )
 }
 
 @Composable
-fun BlackKey() {
+fun BlackKey(onClick: () -> Unit) {
     Box(
         modifier = Modifier
             .width(32.dp)
             .height(120.dp)
             .background(Color.Black, shape = RoundedCornerShape(4.dp))
+            .clickable { onClick() }
     )
 }
 
@@ -225,9 +263,7 @@ fun LessonProgressBar(progress: Float) {
 }
 
 @Composable
-private fun FloatingLessonPhoto(
-    photoUri: Uri?
-) {
+private fun FloatingLessonPhoto(photoUri: Uri?) {
     if (photoUri == null) return
 
     var offsetX by remember { mutableStateOf(0f) }
@@ -254,4 +290,5 @@ private fun FloatingLessonPhoto(
         )
     }
 }
+
 

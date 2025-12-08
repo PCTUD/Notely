@@ -17,12 +17,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.runtime.*
+import org.androidstudio.notely.ui.screens.LessonType
+import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
+
 
 
 @Composable
 
 fun HomeScreen(
-    onStartLesson: () -> Unit,
+    lessonProgressViewModel: LessonProgressViewModel,
+    onStartLesson: (LessonType) -> Unit,
     onQuestionnaire: () -> Unit,
     onAccounts: () -> Unit
 ) {
@@ -33,6 +38,20 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        //progress tracking
+        var melodyProgress by remember { mutableStateOf(0f) }
+        var harmonyProgress by remember { mutableStateOf(0f) }
+        var chordsProgress by remember { mutableStateOf(0f) }
+        var scalesProgress by remember { mutableStateOf(0f) }
+
+        LaunchedEffect(Unit) {
+            melodyProgress = lessonProgressViewModel.getProgress(LessonType.MELODY.lessonId)
+            harmonyProgress = lessonProgressViewModel.getProgress(LessonType.HARMONY.lessonId)
+            chordsProgress = lessonProgressViewModel.getProgress(LessonType.CHORDS.lessonId)
+            scalesProgress = lessonProgressViewModel.getProgress(LessonType.SCALES.lessonId)
+        }
+        //end progress tracking
+
         Text(
             text = "Notely",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
@@ -41,7 +60,6 @@ fun HomeScreen(
         )
 
         // --- Row 1 ---
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -70,16 +88,16 @@ fun HomeScreen(
         ) {
             ExerciseCard(
                 title = "Open this melody exercise in order to continue your melody learning journey",
-                progress = 0.4f,
+                progress = melodyProgress,
                 icon = "♪",
-                onClick = { onStartLesson() }
+                onClick = { onStartLesson(LessonType.MELODY) }
             )
 
             ExerciseCard(
                 title = "Begin your Harmony exercise",
-                progress = 0f,
+                progress = harmonyProgress,
                 icon = "𝄞",
-                onClick = { /* TODO */ }
+                onClick = { onStartLesson(LessonType.HARMONY) }
             )
         }
 
@@ -92,16 +110,16 @@ fun HomeScreen(
         ) {
             ExerciseCard(
                 title = "Begin your chord exercise",
-                progress = 0f,
+                progress = chordsProgress,
                 icon = "🎵",
-                onClick = { /* TODO */ }
+                onClick = { onStartLesson(LessonType.CHORDS) }
             )
 
             ExerciseCard(
                 title = "Begin your scale exercise",
-                progress = 0f,
+                progress = scalesProgress,
                 icon = "♩",
-                onClick = { /* TODO */ }
+                onClick = { onStartLesson(LessonType.SCALES) }
             )
         }
     }

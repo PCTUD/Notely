@@ -12,15 +12,28 @@ import org.androidstudio.notely.ui.screens.QuestionnaireScreen
 import org.androidstudio.notely.ui.screens.AccountScreen
 import org.androidstudio.notely.ui.viewmodel.UserViewModel
 import org.androidstudio.notely.ui.viewmodel.UserViewModelFactory
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import org.androidstudio.notely.ui.screens.LessonType
+import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
+import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModelFactory
+
 
 @Composable
 fun NotelyNavHost(navController: NavHostController) {
     val context = LocalContext.current
 
-    // Shared UserViewModel for account stuff
     val userViewModel: UserViewModel = viewModel(
         factory = UserViewModelFactory.fromContext(context)
     )
+
+    val lessonProgressViewModel: LessonProgressViewModel = viewModel(
+        factory = LessonProgressViewModel.fromContext(context)
+    )
+
+    // Which lesson card did we tap?
+    val selectedLessonType = remember { mutableStateOf(LessonType.MELODY) }
 
     NavHost(
         navController = navController,
@@ -42,26 +55,31 @@ fun NotelyNavHost(navController: NavHostController) {
 
         composable(NavRoutes.Home.route) {
             HomeScreen(
-                onStartLesson = { navController.navigate(NavRoutes.Lesson.route) },
+                lessonProgressViewModel = lessonProgressViewModel,
+                onStartLesson = { lessonType ->
+                    selectedLessonType.value = lessonType
+                    navController.navigate(NavRoutes.Lesson.route)
+                },
                 onQuestionnaire = { navController.navigate(NavRoutes.Questionnaire.route) },
                 onAccounts = { navController.navigate(NavRoutes.Accounts.route) }
             )
         }
 
         composable(NavRoutes.Lesson.route) {
-            LessonScreen(onExit = { navController.popBackStack() })
+            LessonScreen(
+                lessonType = selectedLessonType.value,
+                progressViewModel = lessonProgressViewModel,
+                onExit = { navController.popBackStack() }
+            )
         }
 
         composable(NavRoutes.Questionnaire.route) {
             QuestionnaireScreen { result, score ->
                 userViewModel.saveQuestionnaireForCurrentUser(result, score)
-
-                // After questionnaire, send them to Home (or back to Accounts; your choice)
                 navController.navigate(NavRoutes.Home.route) {
                     popUpTo(NavRoutes.Accounts.route) { inclusive = true }
                 }
             }
         }
-
     }
 }
