@@ -26,23 +26,28 @@ class LessonProgressViewModel(
         }
     }
 
-    // Load progress for a lesson as 0f..1f (10 steps).
-    suspend fun getProgress(lessonId: Int): Float {
-        val userId = currentUserId.value ?: activeUserStore.getActiveUserId()
-        userId ?: return 0f
-
-        val entity = lessonProgressRepository.getProgress(userId, lessonId)
-        val steps = entity?.completedExercisesCount ?: 0
-        return (steps.coerceIn(0, 10) / 10f)
+    // Ensure we always have the active user ID, or null if none.
+    private suspend fun requireUserId(): Int? {
+        // Always ask ActiveUserStore for the *latest* active user
+        val fromStore = activeUserStore.getActiveUserId()
+        _currentUserId.value = fromStore
+        return fromStore
     }
 
-    // Save progress as 0f..1f into 0..10 steps.
+    // Load progress for a lesson as 0f..1f (20 steps: 0.05 each).
+    suspend fun getProgress(lessonId: Int): Float {
+        val userId = requireUserId() ?: return 0f
+        val entity = lessonProgressRepository.getProgress(userId, lessonId)
+        val steps = entity?.completedExercisesCount ?: 0
+        return (steps.coerceIn(0, 20) / 20f)
+    }
+
+    // Save progress as 0f..1f into 0..20 steps.
     fun setProgress(lessonId: Int, progress: Float) {
         viewModelScope.launch {
-            val userId = currentUserId.value ?: activeUserStore.getActiveUserId()
-            userId ?: return@launch
-
-            val steps = (progress.coerceIn(0f, 1f) * 10f).toInt()
+            val userId = requireUserId() ?: return@launch
+            val clamped = progress.coerceIn(0f, 1f)
+            val steps = (clamped * 20f).toInt()
             lessonProgressRepository.setProgress(userId, lessonId, steps)
         }
     }

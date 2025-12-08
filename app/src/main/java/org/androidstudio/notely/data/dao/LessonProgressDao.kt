@@ -25,9 +25,10 @@ interface LessonProgressDao {
         """
         SELECT * FROM lesson_progress
         WHERE userId = :userId AND lessonId = :lessonId
+        ORDER BY id DESC
         LIMIT 1
     """
     )
-
     suspend fun getProgress(userId: Int, lessonId: Int): LessonProgressEntity?
+
 }

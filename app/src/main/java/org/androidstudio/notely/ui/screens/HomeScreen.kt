@@ -8,7 +8,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,49 +17,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.runtime.*
-import org.androidstudio.notely.ui.screens.LessonType
 import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
 
-
-
 @Composable
-
 fun HomeScreen(
     lessonProgressViewModel: LessonProgressViewModel,
     onStartLesson: (LessonType) -> Unit,
     onQuestionnaire: () -> Unit,
     onAccounts: () -> Unit
 ) {
+    // One progress value per lesson
+    var melodyProgress by remember { mutableStateOf(0f) }
+    var harmonyProgress by remember { mutableStateOf(0f) }
+    var chordsProgress by remember { mutableStateOf(0f) }
+    var scalesProgress by remember { mutableStateOf(0f) }
+
+    // Load from DB when the screen first shows
+    LaunchedEffect(Unit) {
+        melodyProgress = lessonProgressViewModel.getProgress(LessonType.MELODY.lessonId)
+        harmonyProgress = lessonProgressViewModel.getProgress(LessonType.HARMONY.lessonId)
+        chordsProgress = lessonProgressViewModel.getProgress(LessonType.CHORDS.lessonId)
+        scalesProgress = lessonProgressViewModel.getProgress(LessonType.SCALES.lessonId)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        //progress tracking
-        var melodyProgress by remember { mutableStateOf(0f) }
-        var harmonyProgress by remember { mutableStateOf(0f) }
-        var chordsProgress by remember { mutableStateOf(0f) }
-        var scalesProgress by remember { mutableStateOf(0f) }
-
-        LaunchedEffect(Unit) {
-            melodyProgress = lessonProgressViewModel.getProgress(LessonType.MELODY.lessonId)
-            harmonyProgress = lessonProgressViewModel.getProgress(LessonType.HARMONY.lessonId)
-            chordsProgress = lessonProgressViewModel.getProgress(LessonType.CHORDS.lessonId)
-            scalesProgress = lessonProgressViewModel.getProgress(LessonType.SCALES.lessonId)
-        }
-        //end progress tracking
-
         Text(
             text = "Notely",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(bottom = 32.dp),
-            color = Color(0xFFFF6A4D) // theme accent
+            color = Color(0xFFFF6A4D)
         )
 
-        // --- Row 1 ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,7 +74,6 @@ fun HomeScreen(
             )
         }
 
-        // --- Row 2 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -103,7 +95,6 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- Row 3 ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -148,11 +139,10 @@ private fun ExerciseCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-
             Text(
                 text = icon,
                 fontSize = 32.sp,
-                color = Color(0xFFFF6A4D), // theme accent
+                color = Color(0xFFFF6A4D),
                 modifier = Modifier.padding(top = 8.dp)
             )
 
@@ -164,7 +154,6 @@ private fun ExerciseCard(
                 lineHeight = 14.sp
             )
 
-            // Progress bar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

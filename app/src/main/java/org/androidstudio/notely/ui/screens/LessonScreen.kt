@@ -1,9 +1,12 @@
 package org.androidstudio.notely.ui.screens
 
+import android.media.SoundPool
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,24 +20,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlin.math.roundToInt
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.border
-import androidx.compose.ui.layout.ContentScale
-import android.media.SoundPool
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalContext
-import org.androidstudio.notely.ui.screens.LessonType
-import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
 import org.androidstudio.notely.R
-import org.androidstudio.notely.ui.screens.PianoKeyboard
-import org.androidstudio.notely.ui.navigation.NotelyNavHost
-
+import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
 
 @Composable
 fun LessonScreen(
@@ -42,19 +37,15 @@ fun LessonScreen(
     progressViewModel: LessonProgressViewModel,
     onExit: () -> Unit
 ) {
-
-
-    // === START piano keyboard mechanics ===
     val context = LocalContext.current
 
-    // SoundPool for short piano notes
+    // ---- SoundPool piano setup ----
     val soundPool = remember {
         SoundPool.Builder()
             .setMaxStreams(4)
             .build()
     }
 
-    // Map note names to loaded sound IDs
     val noteSounds = remember {
         mapOf(
             "C4" to soundPool.load(context, R.raw.c4, 1),
@@ -76,10 +67,9 @@ fun LessonScreen(
         onDispose { soundPool.release() }
     }
 
-    // Shared lesson progress 0f..1f
+    // ---- Progress (0f..1f), loaded from DB ----
     var progress by remember { mutableStateOf(0f) }
 
-    // Load stored progress for this lesson when the screen opens
     LaunchedEffect(lessonType) {
         progress = progressViewModel.getProgress(lessonType.lessonId)
     }
@@ -88,37 +78,29 @@ fun LessonScreen(
         noteSounds[note]?.let { id ->
             soundPool.play(id, 1f, 1f, 1, 0, 1f)
         }
-        // For demo: each key press nudges progress by 5% (20 key presses to fill)
-        progress = (progress + 0.05f).coerceAtMost(1f)
-        progressViewModel.setProgress(lessonType.lessonId, progress)
+        val newProgress = (progress + 0.05f).coerceAtMost(1f)
+        progress = newProgress
+        progressViewModel.setProgress(lessonType.lessonId, newProgress)
     }
-    // === END piano keyboard mechanics ===
 
-
-
-    // ---- Local state for the chosen photo ----
+    // ---- Photo picker ----
     var photoUri by remember { mutableStateOf<Uri?>(null) }
 
-    // ---- ActivityResultLauncher for picking an image from gallery ----
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        // called when the user picks an image (or cancels)
-        if (uri != null) {
-            photoUri = uri
-        }
+        if (uri != null) photoUri = uri
     }
 
+    // ---- Layout ----
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // ===== Main lesson content =====
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // --- Header Row ---
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -149,31 +131,25 @@ fun LessonScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Piano Keys takes a callback
             PianoKeyboard(onKeyPressed = ::playNote)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Button to add / replace lesson photo ---
-            Button(
-                onClick = { photoPickerLauncher.launch("image/*") }
-            ) {
+            Button(onClick = { photoPickerLauncher.launch("image/*") }) {
                 Text(text = if (photoUri == null) "Add lesson photo" else "Change lesson photo")
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Progress Bar (your existing composable) ---
             LessonProgressBar(progress = progress)
         }
 
-        // ===== Floating, draggable photo overlay =====
         FloatingLessonPhoto(photoUri = photoUri)
     }
 }
 
+// ---------- Piano keyboard composables ----------
 
-// PianoKeyboard, WhiteKey, BlackKey all for piano functionaility
 @Composable
 fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
     Box(
@@ -182,7 +158,6 @@ fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
             .height(200.dp),
         contentAlignment = Alignment.Center
     ) {
-
         // White keys: C D E F G A B
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -193,7 +168,7 @@ fun PianoKeyboard(onKeyPressed: (String) -> Unit) {
             WhiteKey { onKeyPressed("E4") }
             WhiteKey { onKeyPressed("F4") }
             WhiteKey { onKeyPressed("G4") }
-            WhiteKey { onKeyPressed("A5") }
+            WhiteKey { onKeyPressed("A5") } // note sample naming
             WhiteKey { onKeyPressed("B5") }
         }
 
@@ -236,6 +211,8 @@ fun BlackKey(onClick: () -> Unit) {
             .clickable { onClick() }
     )
 }
+
+// ---------- Progress bar & floating photo ----------
 
 @Composable
 fun LessonProgressBar(progress: Float) {
@@ -290,5 +267,3 @@ private fun FloatingLessonPhoto(photoUri: Uri?) {
         )
     }
 }
-
-

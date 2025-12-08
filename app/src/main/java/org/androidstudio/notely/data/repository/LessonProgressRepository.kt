@@ -10,12 +10,21 @@ class LessonProgressRepository(private val dao: LessonProgressDao) {
     }
 
     suspend fun setProgress(userId: Int, lessonId: Int, completedCount: Int) {
-        dao.upsertProgress(
+        // Check if already have a row for the user + lesson
+        val existing = dao.getProgress(userId, lessonId)
+
+        val entity = if (existing == null) {
             LessonProgressEntity(
                 userId = userId,
                 lessonId = lessonId,
                 completedExercisesCount = completedCount
             )
-        )
+        } else {
+            existing.copy(completedExercisesCount = completedCount)
+        }
+
+        // insert() uses OnConflictStrategy.REPLACE on the primary key (id),
+        // this will update the row if it already exists.
+        dao.insert(entity)
     }
 }
