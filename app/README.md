@@ -1,7 +1,8 @@
-# Notely 🎹
+# Notely 
 
 Notely is a multi-user Android music learning app built with: Jetpack Compose, RoomDB, and Kotlin.  
-It helps beginner piano students track their progress through simple lessons, record their musical experience via a questionnaire, and maintain per-user lesson progress.
+It helps beginner piano students track their progress through simple lessons, 
+record their musical experience via a questionnaire, and maintain per-user lesson progress.
 
 ---
 
@@ -53,6 +54,7 @@ It helps beginner piano students track their progress through simple lessons, re
 
 > Note: the piano keyboard expects note samples (e.g. `c4.wav`, `cs4.wav`, …) in `app/src/main/res/raw/`.  
 > These should be short piano note audio files named to match the IDs used in `LessonScreen`.
+> (The piano sounds are working in the video, just in case they don't work for whatever reason on your machin!)
 
 ---
 
@@ -67,7 +69,8 @@ It helps beginner piano students track their progress through simple lessons, re
 - **Full CRUD:**
     - INSERT, SELECT, UPDATE, DELETE all implemented on app data (not login).
 - **Screens & persistence:**
-    - List screen (Accounts), input screens (Accounts & Questionnaire), extra screens (Lesson & Home), state persisted via Room + DataStore.
+    - List screen (Accounts), input screens (Accounts & Questionnaire), extra screens (Lesson & Home), 
+    state persisted via Room + DataStore.
 - **ActivityResultLauncher:**
     - Used on `LessonScreen` to launch the photo picker and receive an image URI.
 - **Extra Android features:**
