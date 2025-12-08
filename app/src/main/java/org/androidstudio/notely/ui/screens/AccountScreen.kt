@@ -1,5 +1,7 @@
 package org.androidstudio.notely.ui.screens
 
+import android.R
+import androidx.compose.foundation.background
 import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +23,9 @@ import org.androidstudio.notely.data.entity.UserEntity
 import org.androidstudio.notely.data.repository.RandomEmojiProvider
 import org.androidstudio.notely.ui.viewmodel.UserViewModel
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.graphics.Color
+
 
 /* AccountScreen: lets the user pick an existing account or create a new
 one. Existing accounts are listed from Room, showing per-user emoji and
@@ -55,11 +60,13 @@ fun AccountScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "Who’s playing today?",
+            color = Color(0xFFFF6A4D),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -68,7 +75,8 @@ fun AccountScreen(
         if (users.isNotEmpty()) {
             Text(
                 text = "Choose an account:",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = Color(0xFFFF6A4D),
             )
 
             LazyColumn(
@@ -100,14 +108,22 @@ fun AccountScreen(
         // New account section
         Text(
             text = "Create a new account",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = Color(0xFFFF6A4D)
         )
 
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                cursorColor = Color.Black,
+                focusedLabelColor = Color.Black,
+                unfocusedLabelColor = Color.DarkGray
+            )
         )
 
         Row(
@@ -115,7 +131,7 @@ fun AccountScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Show chosen emoji
-            Text(text = "Emoji: $emoji", style = MaterialTheme.typography.bodyLarge)
+            Text(text = "Emoji: $emoji", style = MaterialTheme.typography.bodyLarge, color = Color(0xFFFF6A4D),)
 
             // Shuffle emoji button
             Button(onClick = { emoji = RandomEmojiProvider.randomEmoji() }) {

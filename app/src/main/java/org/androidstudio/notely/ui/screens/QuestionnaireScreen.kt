@@ -87,6 +87,7 @@ fun QuestionnaireScreen(
                     text = "Have you ever played piano before?",
                     answer = playedBefore,
                     onAnswer = { playedBefore = it }
+
                 )
             }
 
@@ -162,12 +163,12 @@ fun QuestionYesNo(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
+        tonalElevation = 2.dp,
         color = Color.White,
-        tonalElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            Text(text, fontSize = 18.sp)
+            Text(text, fontSize = 18.sp, color = Color(0xFFFF6A4D),)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -181,13 +182,14 @@ fun QuestionYesNo(
 
 @Composable
 fun YesNoOption(symbol: String, selected: Boolean, onClick: () -> Unit) {
+
     Text(
         text = symbol,
         fontSize = 28.sp,
         color = if (selected) Color(0xFFFF6A4D) else Color.Black,
-        modifier = Modifier.clickable { onClick() }
-    )
+        modifier = Modifier.clickable { onClick() })
 }
+
 
 // PRACTICE FREQUENCY SELECTOR
 @Composable
@@ -203,10 +205,9 @@ fun PracticeFrequencySelector(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            Text("How many times a week do you commit to practice?", fontSize = 18.sp)
-
+            Text("How many times a week do you commit to practice?", fontSize = 18.sp, color = Color(0xFFFF6A4D)
+            )
             Spacer(modifier = Modifier.height(12.dp))
-
             Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 (1..5).forEach { number ->
                     Text(

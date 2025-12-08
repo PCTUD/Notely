@@ -30,6 +30,7 @@ import coil.compose.AsyncImage
 import kotlin.math.roundToInt
 import org.androidstudio.notely.R
 import org.androidstudio.notely.ui.viewmodel.LessonProgressViewModel
+import androidx.compose.ui.graphics.Color.Companion.Black
 
 /* LessonScreen: shows a single lesson with a back arrow, lesson title,
 a playable piano keyboard, a gallery-picked lesson photo and a red
@@ -106,6 +107,7 @@ fun LessonScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(16.dp)
     ) {
         Column(
@@ -121,13 +123,14 @@ fun LessonScreen(
                     fontSize = 32.sp,
                     modifier = Modifier
                         .clickable { onExit() }
-                        .padding(end = 12.dp)
+                        .padding(end = 12.dp),
+                    color = Black
                 )
 
                 Text(
                     text = lessonType.title,
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold, color = Black
                     )
                 )
             }
@@ -239,6 +242,7 @@ fun BlackKey(onClick: () -> Unit) {
 fun LessonProgressBar(progress: Float) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
+            color = Black,
             text = "Lesson progress",
             fontSize = 14.sp,
             modifier = Modifier.padding(bottom = 4.dp)

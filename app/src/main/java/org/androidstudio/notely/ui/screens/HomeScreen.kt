@@ -47,6 +47,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -70,7 +71,8 @@ fun HomeScreen(
             Text(
                 text = "Notely",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF6A4D)
             )
 
             // Accounts navigation (right)
@@ -78,7 +80,8 @@ fun HomeScreen(
                 text = "Accounts",
                 modifier = Modifier.clickable { onAccounts() },
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFFF6A4D)
             )
         }
 
@@ -112,7 +115,7 @@ fun HomeScreen(
             ExerciseCard(
                 title = "Begin your chord exercise",
                 progress = chordsProgress,
-                icon = "🎵",
+                icon = "♬",
                 onClick = { onStartLesson(LessonType.CHORDS) } // Open chords lesson
             )
 
