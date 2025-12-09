@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pianoContainer"
+    android:layout_width="match_parent"
+    android:layout_height="200dp"
+    android:background="#CCCCCC">
+
+    <!-- WHITE KEYS -->
+    <LinearLayout
+        android:id="@+id/whiteKeys"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/keyC4"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyD4"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyE4"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyF4"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyG4"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyA5"
+            style="@style/WhiteKey" />
+
+        <View
+            android:id="@+id/keyB5"
+            style="@style/WhiteKey" />
+    </LinearLayout>
+
+    <!-- BLACK KEYS (drawn on top of white keys) -->
+    <View
+        android:id="@+id/keyCs4"
+        style="@style/BlackKey" />
+
+    <View
+        android:id="@+id/keyDs4"
+        style="@style/BlackKey" />
+
+    <View
+        android:id="@+id/keyFs4"
+        style="@style/BlackKey" />
+
+    <View
+        android:id="@+id/keyGs4"
+        style="@style/BlackKey" />
+
+    <View
+        android:id="@+id/keyAs5"
+        style="@style/BlackKey" />
+
+</FrameLayout>

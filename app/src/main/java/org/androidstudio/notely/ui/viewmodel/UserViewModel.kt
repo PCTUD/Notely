@@ -11,7 +11,6 @@ import org.androidstudio.notely.data.entity.UserEntity
 import org.androidstudio.notely.data.repository.UserRepository
 import org.androidstudio.notely.data.repository.QuestionnaireRepository
 import org.androidstudio.notely.data.entity.QuestionnaireResponseEntity
-import org.androidstudio.notely.ui.screens.QuestionnaireResult
 
 
 /* UserViewModel: central state holder for user accounts. Exposes a
@@ -63,37 +62,34 @@ class UserViewModel(
 
     // Save questionnaire + ability score for current user
     fun saveQuestionnaireForCurrentUser(
-        result: QuestionnaireResult,
+        playedBefore: Boolean,
+        grade4: Boolean,
+        grade6: Boolean,
+        grade8: Boolean,
+        circleOfFifths: Boolean,
+        practiceFrequency: Int,
         score: Double
     ) {
         viewModelScope.launch {
             val userId = currentUserId.value ?: return@launch
 
-            // 1) Save detailed questionnaire response
-            val entity = result.toEntity(userId, score)
-            questionnaireRepository.saveResponse(entity)
+            questionnaireRepository.saveResponse(
+                QuestionnaireResponseEntity(
+                    userId = userId,
+                    playedBefore = playedBefore,
+                    grade4 = grade4,
+                    grade6 = grade6,
+                    grade8 = grade8,
+                    circleOfFifths = circleOfFifths,
+                    practiceFrequency = practiceFrequency,
+                    score = score
+                )
+            )
 
-            // 2) Write summary score onto the user row
             userRepository.setAbilityScore(userId, score)
         }
     }
 
-    // Map questionnaire result → Room entity
-    private fun QuestionnaireResult.toEntity(
-        userId: Int,
-        score: Double
-    ): QuestionnaireResponseEntity {
-        return QuestionnaireResponseEntity(
-            userId = userId,
-            playedBefore = playedBefore!!,
-            grade4 = grade4!!,
-            grade6 = grade6!!,
-            grade8 = grade8!!,
-            circleOfFifths = circleOfFifths!!,
-            practiceFrequency = practiceFrequency!!,
-            score = score
-        )
-    }
 
     // Delete a user, optionally clearing active id
     fun deleteUser(user: UserEntity) {

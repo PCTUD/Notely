@@ -63,6 +63,35 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation("androidx.compose.foundation:foundation")
     implementation(libs.androidx.foundation)
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.recyclerview:recyclerview-selection:1.1.0")
+
+
+    // --- Core Android ---
+    implementation("androidx.core:core-ktx:1.12.0")
+
+    // --- AppCompat (FIXES AppCompatActivity) ---
+    implementation("androidx.appcompat:appcompat:1.6.1")
+
+    // --- Material Components (Buttons, TextInput, themes) ---
+    implementation("com.google.android.material:material:1.11.0")
+
+    // --- RecyclerView (User list) ---
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // --- Lifecycle + ViewModel ---
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+    // --- Coroutines ---
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // --- Room (already used) ---
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+
 
 
     // Debug + Preview

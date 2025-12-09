@@ -1,4 +1,4 @@
-package org.androidstudio.notely.ui.screens
+package org.androidstudio.notely.ui.model
 
 enum class LessonType(
     val lessonId: Int,
